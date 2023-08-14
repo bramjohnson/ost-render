@@ -1,4 +1,5 @@
 out/**
 venv/**
 concat.txt
-cover.png
+cover.*
+**/__pycache__/**
