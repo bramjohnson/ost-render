@@ -49,4 +49,3 @@ if args.longplay:
     shutil.move("timestamps.txt", os.path.join(SongPathFinder(songs[0]).output_folder(), "timestamps.txt"))
 
 print(song_paths)
-# lonplay = combine(songs, args.thumbnail, args.output)
