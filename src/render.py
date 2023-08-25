@@ -2,6 +2,7 @@ import os
 import subprocess
 from subprocess import CREATE_NO_WINDOW, PIPE
 from os_nav import SongPathFinder
+from utils import generate_concat_file
 
 # Render single mp3 to mp4
 def render_audio_video(audio, video, out):
@@ -22,25 +23,35 @@ def render_audio_video(audio, video, out):
         # print(string_line)
     return out
 
-# Combine multiple files using ffmpeg
+# Combine Song objects using ffmpeg
 def combine(songs, thumbnail, out):
     sample_song = songs[0]
     out_file = os.path.join(SongPathFinder(sample_song).output_folder(out),f'{sample_song.folder_name()}.mp4')
     # Need to change validate render path for this
     if (os.path.exists(out_file)):
         return out_file
-    entries = []
-    for song in songs:
-        print(song.mp4)
-        
-        entry = 'file ' + '\''
-        entry += (song.mp4).replace("\'", "\'\\\'\'")
-        entry += '\'\n'
-        entries.append(entry)
-    f = open("concat.txt", "w", encoding='utf-8')
-    f.writelines(entries)
-    f.close()
+    
+    generate_concat_file([song.mp4 for song in songs])
+
     p = subprocess.Popen(['ffmpeg', '-f', 'concat', '-safe', '0', '-i', "concat.txt", out_file],
+                         stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=PIPE, creationflags=CREATE_NO_WINDOW,
+                         universal_newlines=True)
+    # I don't know why you need to open it like this, it won't work without the utf-8 encoding ):<
+    for line in open(p.stdout.name, 'r', encoding='utf-8'):
+        string_line = str(line)
+        if "time=" in string_line:
+            time = string_line[string_line.index("time=") + 6:string_line.index("bitrate=") - 1]
+            h, m, s = time.split(':')
+            s, ms = s.split('.')
+        # print(string_line)
+    return out
+
+# Combine multiple files using ffmpeg
+def concat(files, out):
+    if (os.path.exists(out)):
+        return out
+    
+    p = subprocess.Popen(['ffmpeg', '-f', 'concat', '-safe', '0', '-i', files, out],
                          stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=PIPE, creationflags=CREATE_NO_WINDOW,
                          universal_newlines=True)
     # I don't know why you need to open it like this, it won't work without the utf-8 encoding ):<

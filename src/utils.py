@@ -38,3 +38,15 @@ def seconds_to_timestamp(time_in_seconds, total_in_seconds=0):
     print(strftime_string)
 
     return time.strftime(strftime_string, time.gmtime(time_in_seconds))
+
+def generate_concat_file(files):
+    entries = []
+    for file in files:      
+        entry = 'file ' + '\''
+        entry += (file).replace("\'", "\'\\\'\'")
+        entry += '\'\n'
+        entries.append(entry)
+    f = open("concat.txt", "w", encoding='utf-8')
+    f.writelines(entries)
+    f.close()
+    return "concat.txt"

@@ -1,7 +1,8 @@
 from decode import DecodeAudio, AudioProperties, TranslateAudio
 from os_nav import collect_songs, tracklist, SongPathFinder
 from song import Song
-from render import combine
+from render import combine, concat, render_audio_video
+from utils import generate_concat_file
 import argparse, shutil, os
 
 
@@ -40,7 +41,16 @@ songs = [Song(ap) for ap in audio_properties]
 
 # Render songs for longplay
 if args.longplay:
-    longplay = combine(songs, args.thumbnail, args.output)
+    sample_song = songs[0]
+    out_file = os.path.join(SongPathFinder(sample_song).output_folder(args.output),f'{sample_song.folder_name()}.mp3')
+
+    concat_txt = generate_concat_file(song_paths)
+
+    longplay_audio = concat(concat_txt, out_file)
+
+    print("Rendering full video")
+    out_file_video = os.path.join(SongPathFinder(sample_song).output_folder(args.output),f'{sample_song.folder_name()}.mp4')
+    longplay = render_audio_video(out_file, "cover.png", out_file_video)
 
     # Print tracklist for longplay
     tracklist(audio_properties)
